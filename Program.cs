@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using AsciiInvaders.GameObjects.GameStates;
 using TestWolfCurses;
 
 namespace AsciiInvaders
@@ -12,11 +13,21 @@ namespace AsciiInvaders
 
 
     private static InputManager inputManager;
+
+        private static GameStateManager gsm;
         
         static void Main(string[] args)
         {
+            gsm=new GameStateManager();
+            gsm.PushState(new PlayState(gsm));
+            do{
+                //MAIN LOOP 			MAIN LOOP 		MAIN LOOP 		MAIN LOOP			MAIN LOOP
+                gsm.Update();
+                gsm.Render();
+                Thread.Sleep(30);
+            }while(gsm.IsRunning());
             
-            inputManager=new InputManager();
+    /*        inputManager=new InputManager();
             
             inputManager.RegisterInput(newRandom);
             
@@ -30,7 +41,7 @@ namespace AsciiInvaders
                 }
                 
                 Thread.Sleep(30);
-            }
+            }*/
         }
 
        /* static void Randomize()
