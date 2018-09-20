@@ -15,6 +15,7 @@ namespace AsciiInvaders.GameObjects.GameStates
         public GameStateManager(){
             //initialization
             Console.Clear();
+            Console.CursorVisible = false;
             
             stackState=new Stack<GameState>();
             _inputManager=new InputManager();

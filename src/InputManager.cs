@@ -116,7 +116,7 @@ namespace TestWolfCurses
                     old.isReleasedInThisFrame = false;
                 }
 
-                _inputs[key].isPressed = state.IsPressed;
+                _inputs[key].isPressed = (old.isPressed && !old.isReleasedInThisFrame) || (old.isPressedInThisFrame );
             }
             else
             {

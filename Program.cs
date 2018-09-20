@@ -24,7 +24,7 @@ namespace AsciiInvaders
                 //MAIN LOOP 			MAIN LOOP 		MAIN LOOP 		MAIN LOOP			MAIN LOOP
                 gsm.Update();
                 gsm.Render();
-                Thread.Sleep(30);
+                Thread.Sleep(16);
             }while(gsm.IsRunning());
             
     /*        inputManager=new InputManager();
