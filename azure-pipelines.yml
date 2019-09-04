@@ -13,19 +13,9 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-- task: NuGetToolInstaller@1
-
-- task: NuGetCommand@2
+- task: UnityBuildTask@3
   inputs:
-    restoreSolution: '$(solution)'
-
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
-- task: VSTest@2
-  inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    buildTarget: 'standalone'
+    unityProjectPath: 'E:\\UnityProjects\\MyProjects\\CockRoach'
+    outputPath: '$(Build.BinariesDirectory)'
+    outputFileName: 'drop'
