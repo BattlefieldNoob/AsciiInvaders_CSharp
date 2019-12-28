@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace AsciiInvaders.GameObjects.GameEntities
@@ -9,14 +10,14 @@ namespace AsciiInvaders.GameObjects.GameEntities
         private const int MAX_NEMICI = 36;
         private const int NEMICI_RIGA = 12;
 
-        Player player = new Player(0, 1, 20);
+        Player player = new Player(0, 1, 24);
 
-        //List<Rocket*> rockets;
+        List<Rocket> rockets=new List<Rocket>();
         //   List<Enemy*> enemys;
         bool running = true;
         //    static BattleField* instance;
 
-        Timer enemyMoviments = new Timer(1.0f), shootEnabler = new Timer(0.3f);
+        Timer enemyMoviments = new Timer(1.0f), shootCooldown = new Timer(0.3f);
 
 
         public BattleField()
@@ -28,7 +29,7 @@ namespace AsciiInvaders.GameObjects.GameEntities
                   X = ((i * 5) + 4) - ((5 * (tmp - 1)) * NEMICI_RIGA);//Calculate the X position Of Enemy
                   enemys.push_back(new Enemy(i, X + (tmp % 2 == 0 ? 2 : 0), tmp + 1, true));
               }*/
-            shootEnabler.Start();
+            shootCooldown.Start();
             enemyMoviments.Start();
         }
 
@@ -36,10 +37,10 @@ namespace AsciiInvaders.GameObjects.GameEntities
         public override void Render()
         {
             player.Render();
-/*    for (auto missile:rockets) {
-        missile->render();
-    }
-    for (auto enemy:enemys) {
+            foreach (var missile in rockets) {
+                missile.Render();
+            }
+    /*for (auto enemy:enemys) {
         enemy->render();
     }*/
         }
@@ -50,17 +51,17 @@ namespace AsciiInvaders.GameObjects.GameEntities
             bool GameOver = false;
             int shiftDirection = -1;
             //   enemyMoviments->update();
-            //   shootEnabler->update();
-            /*  for (auto missile:rockets) {
-                  missile->update();
-              }*/
+            shootCooldown.Update();
+            foreach (var missile in rockets) {
+                missile.Update();
+            }
             if (GameOver)
             {
                 GameOverScreen();
             }
             else
             {
-                if (shootEnabler.IsFinished())
+                if (shootCooldown.IsFinished())
                 {
                     player._canshoot = true;
                 }
@@ -105,24 +106,24 @@ namespace AsciiInvaders.GameObjects.GameEntities
                       }
                   }
           
-                  rockets.erase(remove_if(rockets.begin(), rockets.end(), [](Rocket *r) {
-                      return r->Y() < 0 || !r->isVisible();
-                  }),rockets.end());
+                  
           
                   enemys.erase(remove_if(enemys.begin(), enemys.end(), [](Enemy* e) {
                       return !e->isVisible();
                   }),enemys.end());
           */
+                var destroyed = rockets.Where(rocket => rocket.Y <= 0 || !rocket.visible);
+                rockets = rockets.Except(destroyed).ToList();
             }
         }
 
-        void ShootRocket()
+        public void ShootRocket()
         {
-            if (player._canshoot /*&& rockets.size() < MAX_MISSILI*/)
+            if (player._canshoot && rockets.Count < MAX_MISSILI)
             {
-                //   rockets.push_back(new Rocket(0, (int) player->X() + 1, (int) player->Y(), true));
+                rockets.Add(new Rocket(0,player.X+1,player.Y-1));
                 player._canshoot = false;
-                shootEnabler.Restart();
+                shootCooldown.Restart();
             }
         }
 
@@ -130,13 +131,13 @@ namespace AsciiInvaders.GameObjects.GameEntities
         {
             if (player.X > 1)
             {
-                player.X = player.X - 0.6f;
+                player.X = player.X - 1;
             }
         }
 
         public void PlayerRight()
         {
-            player.X = player.X + 0.6f;
+            player.X = player.X + 1;
         }
 
         int GameOverScreen()

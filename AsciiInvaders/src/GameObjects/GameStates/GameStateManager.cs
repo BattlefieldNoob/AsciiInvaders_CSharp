@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using TestWolfCurses;
+using OpenTK;
+using OpenTK.Input;
+using SunshineConsole;
+using InputManager = TestWolfCurses.InputManager;
 
 namespace AsciiInvaders.GameObjects.GameStates
 {
@@ -10,18 +13,22 @@ namespace AsciiInvaders.GameObjects.GameStates
         Stack<GameState> stackState;
 
         public InputManager _inputManager;
+        public static ConsoleWindow Console;
         
         
-        public GameStateManager(){
-            //initialization
-            Console.Clear();
-            Console.CursorVisible = false;
-            
+        public GameStateManager()
+        {
+            Console = new ConsoleWindow(32, 80, "Ascii Invaders")
+            {
+                VSync = VSyncMode.On,
+                TargetRenderFrequency = 60
+            };
+
             stackState=new Stack<GameState>();
             _inputManager=new InputManager();
-            
-            _inputManager.RegisterInput(ConsoleKey.A);
-            _inputManager.RegisterInput(ConsoleKey.D);
+            _inputManager.RegisterInput(Key.A);
+            _inputManager.RegisterInput(Key.D);
+            _inputManager.RegisterInput(Key.Space);
         }
         
         public void PushState(GameState newState){
@@ -33,15 +40,14 @@ namespace AsciiInvaders.GameObjects.GameStates
         }
         public void Update(){
             stackState.Peek().Update();
-            _inputManager.EventLoop();
         }
         public void Render(){
-            Console.Clear();
+            Thread.Sleep((int)(Console.TargetRenderPeriod*1000));
             stackState.Peek().Render();
         }
 
         public bool IsRunning(){
-            return (stackState.Peek().IsRunning());
+            return (stackState.Peek().IsRunning()) && Console.WindowUpdate();
         }
 
     }

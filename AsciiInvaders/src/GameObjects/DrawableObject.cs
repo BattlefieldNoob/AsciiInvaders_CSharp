@@ -2,8 +2,8 @@ namespace AsciiInvaders.GameObjects
 {
     public class DrawableObject : GameObject
     {
-        public float X { get; set; }
-        public float Y { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
         public bool visible { get; set; }
         public int id { get; private set; }
        
@@ -11,7 +11,7 @@ namespace AsciiInvaders.GameObjects
         {
         }
 
-        protected DrawableObject(float x, float y, bool visible, int id)
+        protected DrawableObject(int x, int y, bool visible, int id)
         {
             this.X = x;
             this.Y = y;
