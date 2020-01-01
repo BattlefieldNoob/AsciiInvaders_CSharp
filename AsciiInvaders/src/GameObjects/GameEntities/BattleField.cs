@@ -1,155 +1,162 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using AsciiInvaders.GameObjects.GameStates;
+using OpenTK.Graphics;
 
 namespace AsciiInvaders.GameObjects.GameEntities
 {
     public class BattleField : GameObject
     {
-        private const int MAX_MISSILI = 7;
-        private const int MAX_NEMICI = 36;
-        private const int NEMICI_RIGA = 12;
+        private const int MaxRockets = 7;
+        private const int MaxEnemies = 36;
+        private const int EnemiesOnRow = 12;
 
-        Player player = new Player(0, 1, 24);
+        private readonly Player _player = new Player(0, 1, 22);
 
-        List<Rocket> rockets=new List<Rocket>();
-        //   List<Enemy*> enemys;
-        bool running = true;
-        //    static BattleField* instance;
+        private List<Rocket> _rockets = new List<Rocket>();
+        private List<Enemy> _enemies = new List<Enemy>();
 
-        Timer enemyMoviments = new Timer(1.0f), shootCooldown = new Timer(0.3f);
+        private bool _running = true;
 
+        private readonly Timer _enemyXMovement = new Timer(0.75f);
+        private readonly Timer _enemyYMovement = new Timer(3f);
+        private readonly Timer _shootCooldown = new Timer(0.3f);
+
+        private int _shiftDirection = -1;
 
         public BattleField()
         {
-            int tmp = 0, X = 0;
-            /*  for (int i = 0; i < MAX_NEMICI; i++) {//init position of Enemy
-                  if (i % NEMICI_RIGA == 0)
-                      tmp++;
-                  X = ((i * 5) + 4) - ((5 * (tmp - 1)) * NEMICI_RIGA);//Calculate the X position Of Enemy
-                  enemys.push_back(new Enemy(i, X + (tmp % 2 == 0 ? 2 : 0), tmp + 1, true));
-              }*/
-            shootCooldown.Start();
-            enemyMoviments.Start();
+            var tmp = 0;
+            for (var i = 0; i < MaxEnemies; i++)
+            {
+                //init position of Enemy
+                if (i % EnemiesOnRow == 0)
+                    tmp++;
+                var x = ((i * 5) + 4) - ((5 * (tmp - 1)) * EnemiesOnRow);
+                _enemies.Add(new Enemy(i, x + (tmp % 2 == 0 ? 2 : 0), tmp + 1));
+            }
+
+            _shootCooldown.Start();
+            _enemyXMovement.Start();
+            _enemyYMovement.Start();
         }
 
 
         public override void Render()
         {
-            player.Render();
-            foreach (var missile in rockets) {
+            _player.Render();
+            foreach (var missile in _rockets)
+            {
                 missile.Render();
             }
-    /*for (auto enemy:enemys) {
-        enemy->render();
-    }*/
+
+            foreach (var enemy in _enemies)
+            {
+                enemy.Render();
+            }
         }
 
         public override void Update()
         {
-            // UPDATE          UPDATE            UPDATE
-            bool GameOver = false;
-            int shiftDirection = -1;
-            //   enemyMoviments->update();
-            shootCooldown.Update();
-            foreach (var missile in rockets) {
+            _enemyXMovement.Update();
+            _enemyYMovement.Update();
+            _shootCooldown.Update();
+            foreach (var missile in _rockets)
+            {
                 missile.Update();
             }
-            if (GameOver)
+
+            if (_shootCooldown.IsFinished())
             {
-                GameOverScreen();
+                _player.Canshoot = true;
             }
-            else
+
+            if (_enemyXMovement.IsFinished())
             {
-                if (shootCooldown.IsFinished())
+                _enemyXMovement.Restart();
+                _shiftDirection *= -1;  
+                for (var index = 0; index < _enemies.Count; index++)
                 {
-                    player._canshoot = true;
+                    var enemy = _enemies[index];
+                    if((index/EnemiesOnRow)%2==0)
+                        enemy.X += 2 * _shiftDirection;
+                    else
+                        enemy.X -= 2 * _shiftDirection;
+                }
+            }
+
+            if (_enemyYMovement.IsFinished())
+            {
+                _enemyYMovement.Restart();
+                foreach (var enemy in _enemies)
+                {
+                    enemy.Y += 1;
                 }
 
-                /*  std::vector<Enemy *>::iterator EnemyIt;
-                  std::vector<Rocket *>::iterator RocketIt;
-          
-                  if (enemyMoviments->isFinished()) {
-                      shiftDirection *= -1;
-                      for (EnemyIt = enemys.begin(); EnemyIt < enemys.end(); EnemyIt++) {
-                          (*EnemyIt)->Y((*EnemyIt)->Y() + 0.1);
-          
-                          if ((*EnemyIt)->Id() == NEMICI_RIGA || (*EnemyIt)->Id() == NEMICI_RIGA * 2)
-          
-                              shiftDirection *= -1;
-          
-                          if ((int) player->Y() == (int) (*EnemyIt)->Y()) {
-                              GameOver = true;
-                              break;//Game Over
-                          }
-          
-                          (*EnemyIt)->X((*EnemyIt)->X() + 2 * shiftDirection);
-          
-                          enemyMoviments->restart();
-                      }
-                  }
-          
-                  for (EnemyIt = enemys.begin(); EnemyIt < enemys.end(); EnemyIt++) {
-                      for (RocketIt = rockets.begin(); RocketIt < rockets.end(); RocketIt++) {
-          
-                          if ((int) (*RocketIt)->Y() == (int) (*EnemyIt)->Y()) {//check collision between Rocket and enemy
-          
-                              if (((int) (*RocketIt)->X()) >= ((int) (*EnemyIt)->X()) &&
-                                  ((int) (*RocketIt)->X()) <= ((int) (*EnemyIt)->X()) + 2) {
-          
-                                  (*EnemyIt)->setVisible(false);
-                                 // enemys.erase(EnemyIt);//Delete Enemy
-                                  (*RocketIt)->setVisible(false);
-                                  //rockets.erase(RocketIt);//Delete Rocket
-                              }
-                          }
-                      }
-                  }
-          
-                  
-          
-                  enemys.erase(remove_if(enemys.begin(), enemys.end(), [](Enemy* e) {
-                      return !e->isVisible();
-                  }),enemys.end());
-          */
-                var destroyed = rockets.Where(rocket => rocket.Y <= 0 || !rocket.visible);
-                rockets = rockets.Except(destroyed).ToList();
+                if (_enemies.Last().Y == _player.Y)
+                    GameOverScreen();
             }
+
+            foreach (var enemy in _enemies)
+            {
+                foreach (var rocket in _rockets)
+                {
+                    if (rocket.Y == enemy.Y)
+                    {
+                        //check collision between Rocket and enemy
+
+                        if (rocket.X >= enemy.X &&
+                            rocket.X <= enemy.X + 2)
+                        {
+                            enemy.Visible = false;
+                            rocket.Visible = false;
+                        }
+                    }
+                }
+            }
+
+            var destroyedEnemies = _enemies.Where(enemy => !enemy.Visible);
+            _enemies = _enemies.Except(destroyedEnemies).ToList();
+
+
+            var destroyedRockets = _rockets.Where(rocket => rocket.Y <= 0 || !rocket.Visible);
+            _rockets = _rockets.Except(destroyedRockets).ToList();
         }
 
         public void ShootRocket()
         {
-            if (player._canshoot && rockets.Count < MAX_MISSILI)
-            {
-                rockets.Add(new Rocket(0,player.X+1,player.Y-1));
-                player._canshoot = false;
-                shootCooldown.Restart();
-            }
+            if (!_player.Canshoot || _rockets.Count >= MaxRockets) return;
+            
+            _rockets.Add(new Rocket(0, _player.X + 1, _player.Y - 1));
+            _player.Canshoot = false;
+            _shootCooldown.Restart();
         }
 
         public void PlayerLeft()
         {
-            if (player.X > 1)
+            if (_player.X > 0)
             {
-                player.X = player.X - 1;
+                _player.X -= 1;
             }
         }
 
         public void PlayerRight()
         {
-            player.X = player.X + 1;
+            if(_player.X+3<70)
+                _player.X += 1;
         }
 
-        int GameOverScreen()
+        private void GameOverScreen()
         {
+            GameStateManager.Console.Write(20,30,"GAME OVER!",Color4.White);
             Thread.Sleep(4000);
-            running = false;
-            return (1);
+            _running = false;
         }
 
         public bool IsRunning()
         {
-            return (running);
+            return (_running);
         }
     }
 }

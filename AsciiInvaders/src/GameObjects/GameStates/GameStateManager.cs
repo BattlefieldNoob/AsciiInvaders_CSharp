@@ -1,53 +1,53 @@
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using OpenTK;
 using OpenTK.Input;
 using SunshineConsole;
-using InputManager = TestWolfCurses.InputManager;
 
 namespace AsciiInvaders.GameObjects.GameStates
 {
     public class GameStateManager
     {
-        Stack<GameState> stackState;
+        private readonly Stack<GameState> _stackState;
 
-        public InputManager _inputManager;
+        public readonly InputManager InputManager;
         public static ConsoleWindow Console;
         
         
         public GameStateManager()
         {
-            Console = new ConsoleWindow(32, 80, "Ascii Invaders")
+            Console = new ConsoleWindow(26, 70, "Ascii Invaders")
             {
                 VSync = VSyncMode.On,
                 TargetRenderFrequency = 60
             };
 
-            stackState=new Stack<GameState>();
-            _inputManager=new InputManager();
-            _inputManager.RegisterInput(Key.A);
-            _inputManager.RegisterInput(Key.D);
-            _inputManager.RegisterInput(Key.Space);
+            _stackState=new Stack<GameState>();
+            InputManager=new InputManager();
+            InputManager.RegisterInput(Key.A);
+            InputManager.RegisterInput(Key.D);
+            InputManager.RegisterInput(Key.Space);
+            InputManager.RegisterInput(Key.P);
         }
         
         public void PushState(GameState newState){
-            stackState.Push(newState);
+            _stackState.Push(newState);
         }
 
         public void PopState(){
-            stackState.Pop();
+            _stackState.Pop();
         }
         public void Update(){
-            stackState.Peek().Update();
+            InputManager.Update();
+            _stackState.Peek().Update();
         }
         public void Render(){
             Thread.Sleep((int)(Console.TargetRenderPeriod*1000));
-            stackState.Peek().Render();
+            _stackState.Peek().Render();
         }
 
         public bool IsRunning(){
-            return (stackState.Peek().IsRunning()) && Console.WindowUpdate();
+            return (_stackState.Peek().IsRunning()) && Console.WindowUpdate();
         }
 
     }

@@ -1,4 +1,3 @@
-using System.Drawing;
 using AsciiInvaders.GameObjects.GameStates;
 using OpenTK.Graphics;
 
@@ -25,7 +24,7 @@ namespace AsciiInvaders.GameObjects.GameEntities
         public override void Render()
         {
             var console = GameStateManager.Console;
-            if(visible)
+            if(Visible)
                 console.Write(Y,X,'^',Color4.White);
         }
     }

@@ -1,11 +1,11 @@
 using System;
 
-namespace AsciiInvaders
+namespace AsciiInvaders.GameObjects
 {
     public class Timer
     {
         float _goal,_startvalue;
-        bool _finished=false,_started=false;
+        bool _finished,_started;
         
         
         DateTime _prev, _now;

@@ -8,46 +8,51 @@ namespace AsciiInvaders.GameObjects.GameStates
 {
     public class PlayState:GameState
     {
-        private GameStateManager gsm;
-        BattleField gameField;
+        private readonly GameStateManager _gsm;
+        BattleField _gameField;
         private ConsoleWindow _console;
 
 
         public PlayState(GameStateManager gsm){
-            this.gsm=gsm;
+            _gsm=gsm;
             Init();
         }
 
         void Init(){
             _console = GameStateManager.Console;
-            gameField=new BattleField();
+            _gameField=new BattleField();
         }
 
         public override void Update(){
 
-            if (gsm._inputManager.GetInputState(Key.A).isPressed)
+            if (_gsm.InputManager.GetInputState(Key.A).IsPressed)
             {
-                gameField.PlayerLeft();
-            }else if (gsm._inputManager.GetInputState(Key.D).isPressed)
+                _gameField.PlayerLeft();
+            }else if (_gsm.InputManager.GetInputState(Key.D).IsPressed)
             {
-                gameField.PlayerRight();
-            }else if (gsm._inputManager.GetInputState(Key.Space).isPressedInThisFrame)
-            {
-                gameField.ShootRocket();
+                _gameField.PlayerRight();
             }
-/*
-                    case 'p':
-                        gsm->pushState(new PauseState(gsm));
-                        break;
-                }
-            }*/
-            gameField.Update();
+            
+            if (_gsm.InputManager.GetInputState(Key.Space).IsPressedInThisFrame)
+            {
+                _gameField.ShootRocket();
+            }
+            
+            _gameField.Update();
+            
+            if (_gsm.InputManager.GetInputState(Key.P).IsPressedInThisFrame)
+            {
+                Console.WriteLine("Pause");
+                _gsm.PushState(new PauseState(_gsm,this));
+            }
+            
+            
         }
 
         public override void Render()
         {
             ClearScreen();
-            gameField.Render();
+            _gameField.Render();
         }
 
         private void ClearScreen()
@@ -62,7 +67,7 @@ namespace AsciiInvaders.GameObjects.GameStates
         }
 
         public override bool IsRunning(){
-            return (gameField.IsRunning());
+            return (_gameField.IsRunning());
         }
    
     }

@@ -4,8 +4,8 @@ namespace AsciiInvaders.GameObjects
     {
         public int X { get; set; }
         public int Y { get; set; }
-        public bool visible { get; set; }
-        public int id { get; private set; }
+        public bool Visible { get; set; }
+        public int Id { get; private set; }
        
         protected DrawableObject()
         {
@@ -15,8 +15,8 @@ namespace AsciiInvaders.GameObjects
         {
             this.X = x;
             this.Y = y;
-            this.visible = visible;
-            this.id = id;
+            this.Visible = visible;
+            this.Id = id;
         }
         
     }
